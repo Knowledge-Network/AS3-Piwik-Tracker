@@ -1,17 +1,8 @@
+AS3 Piwik Tracker allows you to track page/view, goal, download, link, ecommerce from your AS3 (Flash/Flex/AIR) project!
 
-	AS3 Piwik Tracker
-	
-	Copyright (C) 2011 Benoit Pouzet
-	
-	This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+AS3 Piwik Tracker is an open source project under GPL 3.0 licence.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/gpl-3.0.html>.
+Need more info about Piwik: http://piwik.org
+
+More info for using ecommerce: http://piwik.org/docs/ecommerce-analytics/
