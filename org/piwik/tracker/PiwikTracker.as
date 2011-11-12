@@ -23,9 +23,17 @@ package org.piwik.tracker
 	 * AS3 Piwik Tracker
 	 * 
 	 * <p>
-	 * Need Piwik version 1.6
+	 * Allows you to track user in your Flash/Flex/AIR project
+	 * </p>
+	 * 
+	 * <p>
+	 * Need at least Piwik version 1.6
 	 * </p> 
 	 * 
+	 * 
+	 * @see git://github.com/bpouzet/AS3-Piwik-Tracker.git
+	 * @see http://piwik.org/docs/tracking-api/
+	 * @see http://piwik.org/docs/ecommerce-analytics/
 	 * 
 	 * @author Benoit Pouzet
 	 * 
@@ -49,22 +57,21 @@ package org.piwik.tracker
 		private var urlRequest:URLRequest;
 		private var requestVars:URLVariables;
 		
+		private var visitCount:int;
+		
 		private var ecommerceItems:Array;
 		private var lastEcommerceOrderTs:int;
 		
 		/**
 		 * Construct a new AS3 Piwik Tracker
 		 * 
+		 * <p>Example</br>
+		 * <code>var tracker:PiwikTracker = new PiwikTracker("http://demo.piwik.org/", 1, "http://piwik.org/as3/");</code>
+		 * </p>
 		 * 
-		 * <pre>
-		 *  var tracker:PiwikTracker = new PiwikTracker("http://demo.piwik.org/", 1, "http://piwik.org/as3/");
-		 * </pre>
-		 * 
-		 * 
-		 * @param piwikAccessUrl
-		 * @param idSite
-		 * @param appUrl
-		 * 
+		 * @param piwikAccessUrl Your Tracking REST API endpoint
+		 * @param idSite Defines the Website ID being tracked
+		 * @param appUrl Set the url of your application
 		 */
 		public function PiwikTracker(piwikAccessUrl:String, idSite:int, appUrl:String)
 		{
@@ -77,6 +84,7 @@ package org.piwik.tracker
 			setUrlRequest();
 			setRequestVars();
 			
+			visitCount = 1;
 			ecommerceItems = new Array();
 		}
 		
@@ -122,42 +130,55 @@ package org.piwik.tracker
 			/** Set request variables **/
 			requestVars = new URLVariables();
 			
+			// Set unique user id
 			requestVars._id = idTracker;
 			requestVars._idn = 0;
 			requestVars._idts = dateTracker;
-			requestVars._idvc = 1;
+			
 			requestVars._refts = 0;
 			requestVars._viewts = dateTracker;
 			
+			
+			// Set the website ID
 			requestVars.idsite = idSiteTracker;
 			
+			// Set to force the request to be recorded
 			requestVars.rec = 1;
+			
+			// Set API version
+			requestVars.apiv = 1;
 			
 			requestVars.cookie = 1;
 			requestVars.fla = 1;
 			
+			// Set the resolution
 			requestVars.res = res;
 		}
 		
 		/**
-		 * Track a page/view
+		 * Tracks a page/view.
 		 * 
-		 * @param documentTitle
+		 * @param documentTitle Page title
 		 * 
 		 */
 		public function trackPageView(documentTitle:String):void{
+			// Set the url to track
 			requestVars.url = appUrlTracker+documentTitle;
+			
+			// Set the page title
 			requestVars.action_name = documentTitle;
 			
 			tracking();
 		}
 		/**
+		 * Tracks action.
 		 * 
-		 * @param actionUrl
-		 * @param actionType
+		 * @param actionUrl The URL of the download or outlink
+		 * @param actionType Type of action "download" or "link"
 		 * 
 		 */
 		public function trackAction(actionUrl:String, actionType:String):void{
+			// Set the download url or the external url
 			switch(actionType){
 				case 'download':
 					requestVars.download = actionUrl;
@@ -174,12 +195,14 @@ package org.piwik.tracker
 			tracking();
 		}
 		/**
+		 * Tracks goal.
 		 * 
-		 * @param idGoal
-		 * @param revenue
+		 * @param idGoal The id goal
+		 * @param revenue The revenue of the goal
 		 * 
 		 */
 		public function trackGoal(idGoal:int, revenue:Number=0):void{
+			// Set the given goal
 			requestVars.idgoal = idGoal;
 			if(revenue>0) requestVars.revenue = revenue;
 			
@@ -189,12 +212,18 @@ package org.piwik.tracker
 		/** Ecommerce **/
 		
 		/**
+		 * Adds an item in the ecommerce order.
 		 * 
-		 * @param sku
-		 * @param name
-		 * @param category
-		 * @param price
-		 * @param quantity
+		 * <p>This should be called before <code>trackEcommerceOrder()</code>, or before <code>trackEcommerceCartUpdate()</code>. 
+		 * This function can be called for all individual products in the cart (or order). 
+		 * SKU parameter is mandatory. Other parameters are optional. 
+		 * Ecommerce items added via this function are automatically cleared when <code>trackEcommerceOrder()</code> is called.</p>
+		 * 
+		 * @param sku The product SKU
+		 * @param name The product name
+		 * @param category Array of product categories
+		 * @param price The product price
+		 * @param quantity The product quantity
 		 * 
 		 */
 		public function addEcommerceItem(productSKU:String, productName:String=null, productCategory:Array=null, price:Number=0, quantity:int=1):void{
@@ -214,8 +243,12 @@ package org.piwik.tracker
 			ecommerceItems.push(item);
 		}
 		/**
+		 * Tracks a cart update.
 		 * 
-		 * @param grandTotal
+		 * <p>On every Cart update, you must call addEcommerceItem() for each item (product) in the cart, including the items that haven't been updated since the last cart update. 
+		 * Items which were in the previous cart and are not sent in later Cart updates will be deleted from the cart (in the database).</p>
+		 * 
+		 * @param grandTotal Cart grandTotal (sum of all items' prices)
 		 * 
 		 */
 		public function trackEcommerceCartUpdate(grandTotal:Number):void{
@@ -224,13 +257,17 @@ package org.piwik.tracker
 		}
 		
 		/**
+		 * Tracks an ecommerce order.
 		 * 
-		 * @param orderId
-		 * @param grandTotal
-		 * @param subTotal
-		 * @param tax
-		 * @param shipping
-		 * @param discount
+		 * <p>If the Ecommerce order contains items (products), you must call first the addEcommerceItem() for each item in the order. 
+		 * All revenues (grandTotal, subTotal, tax, shipping, discount) will be individually summed and reported in Piwik reports.</p>
+		 * 
+		 * @param orderId Unique Order ID
+		 * @param grandTotal Grand total revenue of the transaction (including tax, shipping, etc.)
+		 * @param subTotal Sub total amount, sum of items prices in this order (before Tax and Shipping costs are applied)
+		 * @param tax Tax amount for this order
+		 * @param shipping Shipping amount for this order
+		 * @param discount Discounted amount in this order
 		 * 
 		 */
 		public function trackEcommerceOrder(orderId:String, grandTotal:Number, subTotal:Number=0, tax:Number=0, shipping:Number=0, discount:Number=0):void{
@@ -267,9 +304,12 @@ package org.piwik.tracker
 		
 		
 		/**
+		 * Tracks the page/view as an ecommerce category page/view
 		 * 
-		 * @param documentTitle
-		 * @param category
+		 * <p><code>trackPageView()</code> will automatilly be called</p>
+		 * 
+		 * @param documentTitle Page title
+		 * @param category Array of product categories 
 		 * 
 		 */
 		public function trackEcommerceCategoryView(documentTitle:String, category:Array):void{
@@ -278,12 +318,15 @@ package org.piwik.tracker
 			
 		}
 		/**
+		 * Tracks the page/view as an item (product) page/view
 		 * 
-		 * @param documentTitle
-		 * @param productSku
-		 * @param productName
-		 * @param productCategory
-		 * @param price
+		 * <p><code>trackPageView()</code> will automatilly be called</p>
+		 * 
+		 * @param documentTitle Page title
+		 * @param productSku The product SKU
+		 * @param productName The product name
+		 * @param productCategory Array of product categories
+		 * @param price The product price
 		 * 
 		 */
 		public function trackEcommerceProductView(documentTitle:String, productSku:String="", productName:String="", productCategory:Array=null, price:Number=0):void{
@@ -294,12 +337,6 @@ package org.piwik.tracker
 		
 		/**
 		 * 
-		 * @param documentTitle
-		 * @param type
-		 * @param productSku
-		 * @param productName
-		 * @param productCategory
-		 * @param price
 		 * 
 		 */
 		private function setEcommerceView(documentTitle:String, type:String, productSku:String="", productName:String="", productCategory:Array=null, price:Number=0):void{
@@ -348,6 +385,7 @@ package org.piwik.tracker
 			if(Capabilities.isDebugger) trace(msg);
 		}
 		/**
+		 * Show an error.
 		 * 
 		 * @param msg
 		 * 
@@ -361,9 +399,14 @@ package org.piwik.tracker
 		 * 
 		 */
 		private function tracking(currentEcommerceOrderTs:int=0):void{
-			requestVars.r = Math.random().toString().slice(2,8);
+			// Set a random
+			requestVars.rand = Math.random().toString().slice(2,8);
+			
+			// Set the current count of visits
+			requestVars._idvc = visitCount;
 			
 			var date:Date = new Date();
+			// Set the current time
 			requestVars.h = date.hours;
 			requestVars.m = date.minutes;
 			requestVars.s = date.seconds;
@@ -381,6 +424,8 @@ package org.piwik.tracker
 			
 			loader.load(urlRequest);
 			
+			// increment visit count
+			visitCount++;
 			
 			// update cookie 
 			if(currentEcommerceOrderTs !=  0){
@@ -395,7 +440,7 @@ package org.piwik.tracker
 		 * 
 		 */
 		private function onComplete(event:Event):void{
-			showDebug("complete");
+			showDebug("Request sent");
 		}
 		/**
 		 * 
@@ -403,7 +448,7 @@ package org.piwik.tracker
 		 * 
 		 */
 		private function onError(event:IOErrorEvent):void{
-			showDebug("error");
+			showDebug("IO error");
 		}
 		/**
 		 * 
