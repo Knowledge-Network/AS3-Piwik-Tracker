@@ -17,7 +17,8 @@ Usage
 - Import AS3 Piwik Tracker library in your project
 - Then create a variable and instantiate a PiwikTracker:
 
-	var tracker:PiwikTracker = new PiwikTracker("YOUR_PIWIK_ACCESS_URL", YOUR_PIWIK_WEBSITE_ID, "THE_NAME_OF_YOUR_APPLICATION");
+	var tracker:PiwikTracker;
+	tracker = new PiwikTracker("YOUR_PIWIK_ACCESS_URL", YOUR_PIWIK_WEBSITE_ID, "THE_NAME_OF_YOUR_APPLICATION");
 
 - Now you can track page/view, goal, download, link, ecommerce
 
@@ -47,5 +48,7 @@ More info
 ---------
 
 About Piwik: http://piwik.org
+
 Piwik Tracking API: http://piwik.org/docs/tracking-api/
+
 Ecommerce tracking: http://piwik.org/docs/ecommerce-analytics/
