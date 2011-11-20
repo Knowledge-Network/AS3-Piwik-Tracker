@@ -1,7 +1,7 @@
 AS3 Piwik Tracker 
 =================
 
-Allows you to track page/view, goal, download, link, ecommerce from your Flash/Flex/AIR project!
+Allows you to track page/view, goal, download, link, custom variables and ecommerce from your Flash/Flex/AIR project!
 
 
 License
@@ -20,7 +20,7 @@ Usage
 		var tracker:PiwikTracker;
 		tracker = new PiwikTracker("YOUR_PIWIK_ACCESS_URL", YOUR_PIWIK_WEBSITE_ID, "YOUR_APPLICATION_URL");
 
-- Now you can track page/view, goal, download, link, ecommerce
+- Now you can track page/view, goal, download, link, custom variables and ecommerce
 
 
 ### Examples of available functions
@@ -40,6 +40,14 @@ To track an action:
 To track a goal:
 
 	tracker.trackGoal(1, 10);
+
+To set a visit custom variables:
+	
+	tracker.setCustomVariableVisit(new Array(["My App version", "1.0"],["Other", "value"]));
+
+To set a page custom variables:
+
+	tracker.setCustomVariablePage(new Array(["Name1", "value1"],["Name2", "value2"]));
 
 To track add to Cart with 2 products:
 
@@ -74,10 +82,17 @@ In myApp.mxml:
 				protected function application1_creationCompleteHandler(event:FlexEvent):void
 				{
 					// TODO Auto-generated method stub
-					// instantiate
+					// Instantiate PiwikTracker
 					tracker = new PiwikTracker("http://yourwebsite.com/piwik/", 1, 'http://yourwebsite.com/as3/');
 					
-					// track a page/view
+					// Set visit custom variables
+					tracker.setCustomVariableVisit(new Array(["My App version", "1.0"],["Other", "test"]));
+					
+					
+					// Set page custom variables
+					tracker.setCustomVariablePage(new Array(["State", "home"]));
+					
+					// Track a page/view
 					tracker.trackPageView('home');
 				}
 				protected function button1_clickHandler(event:MouseEvent):void
@@ -85,7 +100,10 @@ In myApp.mxml:
 					// TODO Auto-generated method stub
 					currentState = "view1";
 					
-					// track a page/view
+					// Set page custom variables
+					tracker.setCustomVariablePage(new Array(["State", "view1"]));
+					
+					// Track a page/view
 					tracker.trackPageView('view1');
 				}
 			]]>

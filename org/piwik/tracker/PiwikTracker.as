@@ -1,7 +1,7 @@
 /*
 	AS3 Piwik Tracker
 	
-	Link git://github.com/bpouzet/AS3-Piwik-Tracker.git
+	Link https://github.com/bpouzet/AS3-Piwik-Tracker.git
 	Licence released under BSD License http://www.opensource.org/licenses/bsd-license.php
 
 */
@@ -58,6 +58,9 @@ package org.piwik.tracker
 		private var requestVars:URLVariables;
 		
 		private var visitCount:int;
+		
+		private var visitCVar:String;
+		private var pageCVar:String;
 		
 		private var ecommerceItems:Array;
 		private var lastEcommerceOrderTs:int;
@@ -153,6 +156,79 @@ package org.piwik.tracker
 			
 			// Set the resolution
 			requestVars.res = res;
+		}
+		
+		/**
+		 * 
+		 * Visit scope custom variables.
+		 *  
+		 * 
+		 * <p>Example</br>
+		 * <code>
+		 * var myVar:Array = new Array(["My App version", "1.0"], ["Other", "value"]);
+		 * tracker.setCustomVariableVisit(myVar);
+		 * </code>
+		 * </p>
+		 * 
+		 * @param vars Array of string object
+		 * 
+		 */
+		public function setCustomVariableVisit(vars:Array):void{
+			if(vars.length > 5){
+				showError("Too much vars for visit");
+				return;
+			}
+			
+			setCustomVariable(vars, "visit");
+		}
+		/**
+		 * 
+		 * Page scope custom variables.
+		 * Need to set on each page/view.
+		 * 
+		 * <p>Example</br>
+		 * <code>
+		 * var myVar:Array = new Array(["Name1", "value1"], ["Name2", "value2"]);
+		 * tracker.setCustomVariablePage(myVar);
+		 * </code>
+		 * </p>
+		 * 
+		 * @param vars Array of string object
+		 * 
+		 */
+		public function setCustomVariablePage(vars:Array):void{
+			if(vars.length > 5){
+				showError("Too much vars for page");
+				return;
+			}
+			
+			setCustomVariable(vars, "page");
+		}
+		/**
+		 * 
+		 * @param vars Array of string object
+		 * @param scope Scope to set your custom variables (visit or page)
+		 * 
+		 */
+		private function setCustomVariable(vars:Array, scope:String):void{
+			var cvar:String="";
+			
+			var i:int=0;
+			for(i; i<vars.length; i++){
+				cvar += '"'+(i+1)+'"'+':["'+vars[i][0]+ '", "' +vars[i][1]+'"],';
+			}
+			
+			cvar = '{' + cvar.substr(0, cvar.length-1) + '}';
+			
+			switch(scope){
+				case 'visit':
+					visitCVar = cvar;
+					break;
+				
+				case 'page':
+					pageCVar = cvar;
+					break;
+			}
 		}
 		
 		/**
@@ -410,6 +486,15 @@ package org.piwik.tracker
 			requestVars.h = date.hours;
 			requestVars.m = date.minutes;
 			requestVars.s = date.seconds;
+			
+			// Set visit scope custom variables
+			if(visitCVar != null) requestVars._cvar = visitCVar;
+			
+			// Set page scope custom variables
+			if(pageCVar != null) {
+				requestVars.cvar = pageCVar;
+				pageCVar = null;
+			}
 			
 			if(lastEcommerceOrderTs !=  0) requestVars._ects = lastEcommerceOrderTs;
 			
